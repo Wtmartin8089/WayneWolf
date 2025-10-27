@@ -1,0 +1,166 @@
+name: Build and Release WayneWolf
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to build (e.g., v1.0.0)'
+        required: true
+        type: string
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          df -h
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            rust-all \
+            cbindgen \
+            pigz \
+            python3-pip \
+            nodejs \
+            npm \
+            libgtk-3-dev \
+            libdbus-glib-1-dev \
+            libxt-dev \
+            libpulse-dev
+
+      - name: Verify Rust installation
+        run: |
+          rustc --version
+          cargo --version
+          cbindgen --version
+
+      - name: Build WayneWolf
+        run: |
+          cd WayneWolf
+          make fetch
+          make dir
+          make bootstrap
+          make setup-wasi
+          make build
+          make package
+
+      - name: Create release package
+        run: |
+          ./packaging/scripts/create-release.sh
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: waynewolf-linux-x86_64
+          path: |
+            dist/waynewolf-*.tar.gz
+            dist/SHA256SUMS
+          retention-days: 30
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            dist/waynewolf-*.tar.gz
+            dist/SHA256SUMS
+          body: |
+            # WayneWolf Release ${{ github.ref_name }}
+
+            ## What's New
+            See [CHANGELOG.md](CHANGELOG.md) for details.
+
+            ## Installation
+
+            ### Quick Install (Recommended)
+            ```bash
+            # Download and extract
+            wget https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/waynewolf-*-linux-x86_64.tar.gz
+            tar xzf waynewolf-*-linux-x86_64.tar.gz
+            cd waynewolf-*
+
+            # Install
+            ./install.sh
+
+            # Launch
+            waynewolf
+            ```
+
+            ### Manual Installation
+            See [INSTALL.txt](INSTALL.txt) in the release archive.
+
+            ### Package Managers
+            - **Arch Linux (AUR):** `yay -S waynewolf`
+            - **Flatpak:** Coming soon
+            - **AppImage:** Coming soon
+
+            ## Checksums
+            Verify your download:
+            ```bash
+            sha256sum -c SHA256SUMS
+            ```
+
+            ## Profiles
+            - `waynewolf dev` - Development profile
+            - `waynewolf browse` - Work/browsing profile
+            - `waynewolf ghost` - Anonymous profile
+
+            ## Documentation
+            - [README.md](README.md) - Full documentation
+            - [BUILD_GUIDE.md](BUILD_GUIDE.md) - Build from source
+            - [CUSTOMIZATIONS.md](CUSTOMIZATIONS.md) - Customization guide
+
+            ---
+            **The wolf is ready. Now hunt.**
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-appimage:
+    runs-on: ubuntu-20.04
+    needs: build-linux
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download Linux build
+        uses: actions/download-artifact@v4
+        with:
+          name: waynewolf-linux-x86_64
+          path: dist/
+
+      - name: Install AppImage tools
+        run: |
+          wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x appimagetool-x86_64.AppImage
+          sudo mv appimagetool-x86_64.AppImage /usr/local/bin/appimagetool
+
+      - name: Build AppImage
+        run: |
+          ./packaging/appimage/build.sh
+
+      - name: Upload AppImage
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            dist/WayneWolf-*.AppImage
+            dist/WayneWolf-*.AppImage.sha256
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

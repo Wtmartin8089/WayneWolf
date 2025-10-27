@@ -1,0 +1,66 @@
+# Build artifacts
+*.tar.xz
+*.tar.gz
+*.deb
+*.rpm
+*.AppImage
+*.apk
+dist/
+build/
+*.o
+*.so
+*.a
+
+# WayneWolf build directory - exclude entirely (20GB+ of source/builds)
+# Users will clone LibreWolf separately following BUILD_GUIDE.md
+WayneWolf/
+
+# Settings submodule (if it's a git submodule)
+settings/
+
+# Temporary files
+*.tmp
+*.log
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Extension cache
+.extensions-cache/*.xpi
+
+# Profiles (user data - shouldn't be in repo)
+profiles/*/
+.waynewolf/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.sublime-*
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.pytest_cache/
+
+# Node
+node_modules/
+package-lock.json
+
+# Rust
+target/
+Cargo.lock
+
+# Android
+*.keystore
+local.properties
+fenix/
+
+# Build tools
+appimagetool
+
+# Keep these directories but ignore contents
+!.extensions-cache/.gitkeep
+!profiles/.gitkeep

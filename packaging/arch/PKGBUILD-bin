@@ -1,0 +1,84 @@
+# Maintainer: Wayne Martin <your@email.com>
+# This is a binary package that installs pre-built WayneWolf
+pkgname=waynewolf-bin
+pkgver=141.0
+pkgrel=1
+pkgdesc="Privacy-focused browser with profile templates and extension management (binary release)"
+arch=('x86_64')
+url="https://github.com/WTmartin8089/waynewolf"
+license=('MPL2')
+depends=(
+    'gtk3'
+    'dbus-glib'
+    'ffmpeg'
+    'nss'
+    'ttf-font'
+    'libpulse'
+)
+optdepends=(
+    'tor: For anonymous mode with Tor integration'
+    'networkmanager: For captive portal detection'
+    'libnotify: For notification support'
+)
+provides=('waynewolf')
+conflicts=('waynewolf')
+source=(
+    "$pkgname-$pkgver.tar.gz::$url/releases/download/v$pkgver/waynewolf-$pkgver-linux-x86_64.tar.gz"
+)
+sha256sums=('SKIP')  # Update this with actual checksum from GitHub release
+
+package() {
+    cd "$srcdir"
+
+    # Extract and install browser
+    install -dm755 "$pkgdir/usr/lib/waynewolf"
+    bsdtar -xf librewolf-*.tar.xz -C "$pkgdir/usr/lib/" --strip-components=1
+    mv "$pkgdir/usr/lib/librewolf" "$pkgdir/usr/lib/waynewolf" || true
+
+    # Install launcher wrapper
+    install -Dm755 /dev/stdin "$pkgdir/usr/bin/waynewolf" << 'EOF'
+#!/bin/bash
+# WayneWolf system launcher wrapper
+export MOZ_ENABLE_WAYLAND=1
+export MOZ_REQUIRE_SIGNING=0
+
+BROWSER_DIR="/usr/lib/waynewolf"
+SHARE_DIR="/usr/share/waynewolf"
+
+# Run the launcher script
+if [ -f "$SHARE_DIR/launch-waynewolf.sh" ]; then
+    exec "$SHARE_DIR/launch-waynewolf.sh" "$@"
+else
+    exec "$BROWSER_DIR/librewolf" "$@"
+fi
+EOF
+
+    # Install supporting scripts and configs
+    install -dm755 "$pkgdir/usr/share/waynewolf"
+    install -Dm755 launch-waynewolf.sh "$pkgdir/usr/share/waynewolf/"
+    install -Dm755 install-extensions.sh "$pkgdir/usr/share/waynewolf/"
+    install -Dm644 user.js "$pkgdir/usr/share/waynewolf/"
+    install -Dm644 extensions.conf "$pkgdir/usr/share/waynewolf/"
+
+    # Install profile templates
+    install -dm755 "$pkgdir/usr/share/waynewolf/profile-templates"
+    cp -r profile-templates/* "$pkgdir/usr/share/waynewolf/profile-templates/"
+
+    # Install desktop file
+    install -Dm644 waynewolf.desktop "$pkgdir/usr/share/applications/waynewolf.desktop"
+
+    # Install icons
+    install -Dm644 waynewolf.svg "$pkgdir/usr/share/icons/hicolor/scalable/apps/waynewolf.svg"
+    if [ -f waynewolf-48.png ]; then
+        install -Dm644 waynewolf-48.png "$pkgdir/usr/share/icons/hicolor/48x48/apps/waynewolf.png"
+    fi
+    if [ -f waynewolf-128.png ]; then
+        install -Dm644 waynewolf-128.png "$pkgdir/usr/share/icons/hicolor/128x128/apps/waynewolf.png"
+    fi
+    if [ -f waynewolf-256.png ]; then
+        install -Dm644 waynewolf-256.png "$pkgdir/usr/share/icons/hicolor/256x256/apps/waynewolf.png"
+    fi
+
+    # Install documentation
+    install -Dm644 README.md "$pkgdir/usr/share/doc/waynewolf/README.md"
+}

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>org.waynewolf.WayneWolf</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MPL-2.0</project_license>
+  <name>WayneWolf</name>
+  <summary>Privacy-focused browser with profile templates</summary>
+
+  <description>
+    <p>
+      WayneWolf is a custom-built browser fork based on LibreWolf/Firefox, designed for
+      minimalism, maximum privacy, and performance.
+    </p>
+    <p>Features:</p>
+    <ul>
+      <li>Minimalist UI - No distractions, just you and the web</li>
+      <li>Maximum Privacy - Fingerprint resistance, WebRTC blocking, DNS-over-HTTPS</li>
+      <li>Legacy Compatibility - Unsigned extensions work out of the box</li>
+      <li>Performance - GPU acceleration, aggressive caching, zero animations</li>
+      <li>Profile Isolation - Three modes: dev, browse, ghost</li>
+    </ul>
+    <p>
+      WayneWolf features an advanced profile template system with auto-configured privacy
+      settings and extensions for different use cases.
+    </p>
+  </description>
+
+  <launchable type="desktop-id">org.waynewolf.WayneWolf.desktop</launchable>
+
+  <screenshots>
+    <screenshot type="default">
+      <caption>WayneWolf main window</caption>
+      <!-- Add screenshot URL when available -->
+      <image>https://raw.githubusercontent.com/WTmartin8089/waynewolf/main/screenshots/main.png</image>
+    </screenshot>
+  </screenshots>
+
+  <url type="homepage">https://github.com/WTmartin8089/waynewolf</url>
+  <url type="bugtracker">https://github.com/WTmartin8089/waynewolf/issues</url>
+  <url type="help">https://github.com/WTmartin8089/waynewolf/blob/main/README.md</url>
+
+  <developer_name>WayneWolf Project</developer_name>
+
+  <provides>
+    <binary>waynewolf</binary>
+  </provides>
+
+  <content_rating type="oars-1.1">
+    <content_attribute id="social-info">moderate</content_attribute>
+  </content_rating>
+
+  <releases>
+    <release version="141.0" date="2024-10-26">
+      <description>
+        <p>Initial release of WayneWolf</p>
+        <ul>
+          <li>Based on LibreWolf 141.0</li>
+          <li>Profile template system with dev, browse, and ghost modes</li>
+          <li>Minimalist UI with dark theme</li>
+          <li>Auto-extension installation</li>
+          <li>Nuclear privacy settings</li>
+        </ul>
+      </description>
+    </release>
+  </releases>
+
+  <categories>
+    <category>Network</category>
+    <category>WebBrowser</category>
+  </categories>
+
+  <keywords>
+    <keyword>browser</keyword>
+    <keyword>web</keyword>
+    <keyword>privacy</keyword>
+    <keyword>firefox</keyword>
+    <keyword>librewolf</keyword>
+  </keywords>
+</component>

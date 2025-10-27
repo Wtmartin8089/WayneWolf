@@ -1,0 +1,122 @@
+app-id: org.waynewolf.WayneWolf
+runtime: org.freedesktop.Platform
+runtime-version: '23.08'
+sdk: org.freedesktop.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.rust-stable
+  - org.freedesktop.Sdk.Extension.node18
+command: waynewolf
+
+finish-args:
+  # X11 and Wayland support
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --share=ipc
+
+  # OpenGL for hardware acceleration
+  - --device=dri
+
+  # Audio support
+  - --socket=pulseaudio
+
+  # Network access
+  - --share=network
+
+  # File access
+  - --filesystem=xdg-download:rw
+  - --filesystem=xdg-documents:ro
+  - --filesystem=xdg-pictures:ro
+  - --filesystem=xdg-videos:ro
+
+  # Session bus for D-Bus
+  - --socket=session-bus
+
+  # System bus for notifications
+  - --system-talk-name=org.freedesktop.Notifications
+
+  # Allow access to home directory profiles
+  - --persist=.waynewolf
+
+  # Browser-specific permissions
+  - --own-name=org.mozilla.waynewolf.*
+  - --own-name=org.waynewolf.*
+
+modules:
+  # Build dependencies
+  - name: cbindgen
+    buildsystem: simple
+    build-commands:
+      - cargo install --path . --root /app
+    sources:
+      - type: archive
+        url: https://github.com/mozilla/cbindgen/archive/refs/tags/v0.26.0.tar.gz
+        sha256: FILL_IN_SHA256
+
+  # Main WayneWolf application
+  - name: waynewolf
+    buildsystem: simple
+    build-options:
+      append-path: /usr/lib/sdk/rust-stable/bin:/usr/lib/sdk/node18/bin
+      env:
+        CARGO_HOME: /run/build/waynewolf/cargo
+    build-commands:
+      # Build WayneWolf
+      - cd WayneWolf && make fetch
+      - cd WayneWolf && make dir
+      - cd WayneWolf && make bootstrap
+      - cd WayneWolf && make setup-wasi
+      - cd WayneWolf && make build
+      - cd WayneWolf && make package
+
+      # Install to /app
+      - mkdir -p /app/lib/waynewolf
+      - tar -xf WayneWolf/librewolf-*.tar.xz -C /app/lib/ --strip-components=1
+      - mv /app/lib/librewolf /app/lib/waynewolf || true
+
+      # Install supporting files
+      - mkdir -p /app/share/waynewolf
+      - cp launch-waynewolf.sh /app/share/waynewolf/
+      - cp install-extensions.sh /app/share/waynewolf/
+      - cp extensions.conf /app/share/waynewolf/
+      - cp user.js /app/share/waynewolf/
+      - cp -r profile-templates /app/share/waynewolf/
+
+      # Install launcher wrapper
+      - |
+        cat > /app/bin/waynewolf << 'EOF'
+        #!/bin/bash
+        export MOZ_ENABLE_WAYLAND=1
+        export MOZ_REQUIRE_SIGNING=0
+        BROWSER_DIR="/app/lib/waynewolf"
+        SHARE_DIR="/app/share/waynewolf"
+        if [ -f "$SHARE_DIR/launch-waynewolf.sh" ]; then
+          exec bash "$SHARE_DIR/launch-waynewolf.sh" "$@"
+        else
+          exec "$BROWSER_DIR/librewolf" "$@"
+        fi
+        EOF
+      - chmod +x /app/bin/waynewolf
+
+      # Install desktop file
+      - mkdir -p /app/share/applications
+      - cp waynewolf.desktop /app/share/applications/org.waynewolf.WayneWolf.desktop
+
+      # Install icons
+      - mkdir -p /app/share/icons/hicolor/scalable/apps
+      - mkdir -p /app/share/icons/hicolor/48x48/apps
+      - mkdir -p /app/share/icons/hicolor/128x128/apps
+      - mkdir -p /app/share/icons/hicolor/256x256/apps
+      - cp waynewolf.svg /app/share/icons/hicolor/scalable/apps/org.waynewolf.WayneWolf.svg
+      - cp waynewolf-48.png /app/share/icons/hicolor/48x48/apps/org.waynewolf.WayneWolf.png || true
+      - cp waynewolf-128.png /app/share/icons/hicolor/128x128/apps/org.waynewolf.WayneWolf.png || true
+      - cp waynewolf-256.png /app/share/icons/hicolor/256x256/apps/org.waynewolf.WayneWolf.png || true
+
+      # Install appdata
+      - mkdir -p /app/share/metainfo
+      - cp packaging/flatpak/org.waynewolf.WayneWolf.appdata.xml /app/share/metainfo/
+
+    sources:
+      - type: git
+        url: https://github.com/WTmartin8089/waynewolf.git
+        tag: v141.0
+        commit: FILL_IN_COMMIT_SHA
