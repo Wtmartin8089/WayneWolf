@@ -1,0 +1,22 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: waynewolf
+Upstream-Contact: Wayne Martin <ghwinslow1700@hotmail.com>
+Source: https://github.com/WTmartin8089/waynewolf
+
+Files: *
+Copyright: 2025 Wayne Martin
+           2019-2025 LibreWolf Community
+           1998-2025 Mozilla Foundation
+License: MPL-2.0
+
+Files: debian/*
+Copyright: 2025 Wayne Martin <ghwinslow1700@hotmail.com>
+License: MPL-2.0
+
+License: MPL-2.0
+ This Source Code Form is subject to the terms of the Mozilla Public
+ License, v. 2.0. If a copy of the MPL was not distributed with this
+ file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ .
+ On Debian systems, the complete text of the Mozilla Public License 2.0
+ can be found in "/usr/share/common-licenses/MPL-2.0".

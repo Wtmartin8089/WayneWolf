@@ -1,0 +1,12 @@
+waynewolf (141.0-1) unstable; urgency=medium
+
+  * Initial release of WayneWolf browser
+  * Based on LibreWolf 141.0 / Firefox 141.0
+  * Privacy-focused configuration by default
+  * Minimalist dark theme UI
+  * Profile template system (dev, browse, ghost)
+  * Auto-extension installation capability
+  * No telemetry or tracking
+  * Generated with Claude Code
+
+ -- Wayne Martin <ghwinslow1700@hotmail.com>  Sun, 27 Oct 2025 00:00:00 +0000

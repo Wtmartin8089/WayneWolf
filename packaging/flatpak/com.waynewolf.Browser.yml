@@ -1,0 +1,181 @@
+app-id: com.waynewolf.Browser
+runtime: org.freedesktop.Platform
+runtime-version: '23.08'
+sdk: org.freedesktop.Sdk
+command: waynewolf
+finish-args:
+  # Network access
+  - --share=network
+
+  # X11 and Wayland
+  - --share=ipc
+  - --socket=x11
+  - --socket=wayland
+
+  # Audio/Video
+  - --socket=pulseaudio
+  - --device=dri
+
+  # File access
+  - --filesystem=xdg-download:rw
+  - --filesystem=xdg-documents:ro
+  - --filesystem=xdg-pictures:ro
+  - --filesystem=xdg-videos:ro
+
+  # Persistent data
+  - --persist=.waynewolf
+
+  # D-Bus
+  - --talk-name=org.freedesktop.Notifications
+  - --talk-name=org.freedesktop.FileManager1
+  - --talk-name=org.freedesktop.secrets
+  - --own-name=org.mpris.MediaPlayer2.waynewolf.*
+
+  # System tray
+  - --talk-name=org.kde.StatusNotifierWatcher
+
+  # GNOME settings
+  - --system-talk-name=org.freedesktop.GeoClue2
+
+  # Webcam
+  - --device=all
+
+modules:
+  - name: waynewolf
+    buildsystem: simple
+    build-commands:
+      # Extract tarball
+      - tar xf librewolf-${VERSION}.source.tar.gz
+      - cd librewolf-${VERSION}
+
+      # Configure build
+      - |
+        cat > mozconfig << EOF
+        ac_add_options --enable-application=browser
+        ac_add_options --with-app-name=waynewolf
+
+        # Branding
+        ac_add_options --with-branding=browser/branding/waynewolf
+        ac_add_options --with-distribution-id=com.waynewolf
+
+        # Optimization
+        ac_add_options --enable-optimize
+        ac_add_options --enable-release
+        ac_add_options --enable-rust-simd
+        ac_add_options --enable-lto=cross
+
+        # Features
+        ac_add_options --enable-official-branding
+        ac_add_options --enable-update-channel=release
+        ac_add_options --with-unsigned-addon-scopes=app,system
+        ac_add_options --allow-addon-sideload
+
+        # Privacy
+        ac_add_options --disable-crashreporter
+        ac_add_options --disable-updater
+        ac_add_options --disable-tests
+        ac_add_options --disable-debug
+
+        # Disable unwanted features
+        ac_add_options --disable-default-browser-agent
+
+        # Install location
+        ac_add_options --prefix=/app
+        EOF
+
+      # Build
+      - ./mach build
+      - ./mach package
+
+      # Install
+      - DESTDIR=${FLATPAK_DEST} ./mach install
+
+      # Create symlink for command
+      - ln -s /app/lib/waynewolf/waynewolf ${FLATPAK_DEST}/bin/waynewolf
+
+      # Install icons
+      - install -Dm644 browser/branding/waynewolf/default48.png ${FLATPAK_DEST}/share/icons/hicolor/48x48/apps/com.waynewolf.Browser.png
+      - install -Dm644 browser/branding/waynewolf/default128.png ${FLATPAK_DEST}/share/icons/hicolor/128x128/apps/com.waynewolf.Browser.png
+      - install -Dm644 browser/branding/waynewolf/default256.png ${FLATPAK_DEST}/share/icons/hicolor/256x256/apps/com.waynewolf.Browser.png
+
+      # Desktop file
+      - |
+        cat > ${FLATPAK_DEST}/share/applications/com.waynewolf.Browser.desktop << EOF
+        [Desktop Entry]
+        Version=1.0
+        Name=WayneWolf
+        GenericName=Web Browser
+        Comment=Privacy-focused web browser
+        Exec=waynewolf %u
+        Icon=com.waynewolf.Browser
+        Terminal=false
+        Type=Application
+        Categories=Network;WebBrowser;
+        MimeType=text/html;text/xml;application/xhtml+xml;application/xml;application/vnd.mozilla.xul+xml;application/rss+xml;application/rdf+xml;image/gif;image/jpeg;image/png;x-scheme-handler/http;x-scheme-handler/https;x-scheme-handler/ftp;x-scheme-handler/chrome;
+        StartupNotify=true
+        StartupWMClass=waynewolf
+        Actions=new-window;new-private-window;
+
+        [Desktop Action new-window]
+        Name=New Window
+        Exec=waynewolf --new-window %u
+
+        [Desktop Action new-private-window]
+        Name=New Private Window
+        Exec=waynewolf --private-window %u
+        EOF
+
+      # AppStream metadata
+      - |
+        mkdir -p ${FLATPAK_DEST}/share/metainfo
+        cat > ${FLATPAK_DEST}/share/metainfo/com.waynewolf.Browser.appdata.xml << EOF
+        <?xml version="1.0" encoding="UTF-8"?>
+        <component type="desktop">
+          <id>com.waynewolf.Browser</id>
+          <launchable type="desktop-id">com.waynewolf.Browser.desktop</launchable>
+          <name>WayneWolf</name>
+          <summary>Privacy-focused web browser based on LibreWolf</summary>
+          <description>
+            <p>
+              WayneWolf is a privacy-focused web browser fork of LibreWolf with:
+            </p>
+            <ul>
+              <li>Minimalist dark theme UI</li>
+              <li>Profile template system (dev, browse, ghost)</li>
+              <li>Auto-extension installation</li>
+              <li>Nuclear privacy settings by default</li>
+              <li>No telemetry or tracking</li>
+            </ul>
+          </description>
+          <metadata_license>CC0-1.0</metadata_license>
+          <project_license>MPL-2.0</project_license>
+          <url type="homepage">https://github.com/WTmartin8089/waynewolf</url>
+          <url type="bugtracker">https://github.com/WTmartin8089/waynewolf/issues</url>
+          <categories>
+            <category>Network</category>
+            <category>WebBrowser</category>
+          </categories>
+          <releases>
+            <release version="141.0" date="2025-10-27">
+              <description>
+                <p>Initial release based on LibreWolf 141.0</p>
+              </description>
+            </release>
+          </releases>
+          <screenshots>
+            <screenshot type="default">
+              <caption>WayneWolf Browser</caption>
+            </screenshot>
+          </screenshots>
+        </component>
+        EOF
+
+    sources:
+      - type: archive
+        url: https://github.com/WTmartin8089/waynewolf/releases/download/v141.0/librewolf-141.0.source.tar.gz
+        sha256: 8285a06120c73219e8c4d07c89720aadbd581b33760c68bafb0bec16c6e1df84
+        x-checker-data:
+          type: json
+          url: https://api.github.com/repos/WTmartin8089/waynewolf/releases/latest
+          version-query: .tag_name | sub("^v"; "")
+          url-query: .assets[] | select(.name | endswith(".source.tar.gz")) | .browser_download_url

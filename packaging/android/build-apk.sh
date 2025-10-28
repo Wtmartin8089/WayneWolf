@@ -55,7 +55,7 @@ cat >> gradle.properties << EOF
 # WayneWolf Customizations
 android.useAndroidX=true
 android.enableJetifier=true
-org.gradle.jvmargs=-Xmx4g -XX:MaxPermSize=2048m -XX:+HeapDumpOnOutOfMemoryError
+org.gradle.jvmargs=-Xmx4g -XX:+HeapDumpOnOutOfMemoryError
 EOF
 
 # Customize app name and package

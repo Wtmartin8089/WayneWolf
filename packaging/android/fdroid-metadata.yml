@@ -1,0 +1,63 @@
+# F-Droid Metadata for WayneWolf Browser
+# See: https://f-droid.org/docs/Build_Metadata_Reference/
+
+Categories:
+  - Internet
+  - Security
+
+License: MPL-2.0
+
+AuthorName: Wayne Martin
+AuthorEmail: ghwinslow1700@hotmail.com
+AuthorWebSite: https://github.com/WTmartin8089
+
+WebSite: https://github.com/WTmartin8089/waynewolf
+SourceCode: https://github.com/WTmartin8089/waynewolf
+IssueTracker: https://github.com/WTmartin8089/waynewolf/issues
+Changelog: https://github.com/WTmartin8089/waynewolf/releases
+
+Name: WayneWolf
+AutoName: WayneWolf Browser
+
+Summary: Privacy-focused mobile browser with profile templates
+
+Description: |-
+    WayneWolf is a privacy-hardened mobile browser based on Mozilla Firefox (Fenix)
+    with enhanced privacy features and a unique profile system.
+
+    Features:
+    * Profile Templates - Separate profiles for development, work, and anonymous browsing
+    * Privacy Hardening - Enhanced tracking protection and fingerprinting resistance
+    * Extension Support - Compatible with Firefox Android extensions
+    * Dark Theme - Minimalist dark interface
+    * No Telemetry - All Mozilla telemetry disabled by default
+    * Tor Ready - SOCKS proxy support for Tor integration
+
+    Based on LibreWolf philosophy but optimized for mobile use.
+
+    WayneWolf inherits the Mozilla Public License 2.0 from Firefox/Fenix.
+
+RepoType: git
+Repo: https://github.com/WTmartin8089/waynewolf.git
+
+Builds:
+  - versionName: '1.0.0'
+    versionCode: 1
+    commit: v1.0.0-android
+    subdir: packaging/android
+    gradle:
+      - release
+    prebuild:
+      - git clone --depth 1 https://github.com/mozilla-mobile/fenix.git
+      - cd fenix
+      - sed -i 's/applicationId "org.mozilla.fenix"/applicationId "org.waynewolf.browser"/' app/build.gradle
+      - sed -i 's/<string name="app_name">.*<\/string>/<string name="app_name">WayneWolf<\/string>/' app/src/main/res/values/strings.xml
+    build:
+      - cd fenix
+      - ./gradlew assembleRelease
+    ndk: r25b
+
+AutoUpdateMode: Version v%v-android
+UpdateCheckMode: Tags ^v[0-9.]+$
+CurrentVersion: '1.0.0'
+CurrentVersionCode: 1

@@ -1,0 +1,48 @@
+#!/usr/bin/make -f
+
+export DH_VERBOSE = 1
+export SHELL = /bin/bash
+
+# Use all available CPU cores
+export MAKEFLAGS = -j$(shell nproc)
+
+%:
+	dh $@
+
+override_dh_auto_configure:
+	# Extract source if needed
+	if [ ! -d "librewolf-141.0" ]; then \
+		tar xf ../librewolf-141.0-1.source.tar.gz; \
+	fi
+
+override_dh_auto_build:
+	cd librewolf-141.0 && \
+	./mach bootstrap --application-choice=browser --no-interactive && \
+	./mach build
+
+override_dh_auto_install:
+	cd librewolf-141.0 && \
+	DESTDIR=$(CURDIR)/debian/waynewolf ./mach install
+
+	# Create proper directory structure
+	mkdir -p $(CURDIR)/debian/waynewolf/usr/bin
+	mkdir -p $(CURDIR)/debian/waynewolf/usr/share/applications
+	mkdir -p $(CURDIR)/debian/waynewolf/usr/share/icons/hicolor/48x48/apps
+	mkdir -p $(CURDIR)/debian/waynewolf/usr/share/icons/hicolor/128x128/apps
+
+	# Install launcher script
+	install -Dm755 $(CURDIR)/launch-waynewolf.sh $(CURDIR)/debian/waynewolf/usr/bin/waynewolf
+
+	# Install desktop file
+	install -Dm644 $(CURDIR)/waynewolf.desktop $(CURDIR)/debian/waynewolf/usr/share/applications/
+
+	# Install icons
+	install -Dm644 $(CURDIR)/waynewolf-48.png $(CURDIR)/debian/waynewolf/usr/share/icons/hicolor/48x48/apps/waynewolf.png
+	install -Dm644 $(CURDIR)/waynewolf-128.png $(CURDIR)/debian/waynewolf/usr/share/icons/hicolor/128x128/apps/waynewolf.png
+
+override_dh_auto_clean:
+	rm -rf librewolf-141.0
+	dh_auto_clean
+
+override_dh_shlibdeps:
+	dh_shlibdeps --dpkg-shlibdeps-params=--ignore-missing-info

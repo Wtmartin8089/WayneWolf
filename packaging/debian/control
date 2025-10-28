@@ -1,0 +1,51 @@
+Source: waynewolf
+Section: web
+Priority: optional
+Maintainer: Wayne Martin <ghwinslow1700@hotmail.com>
+Build-Depends: debhelper-compat (= 13),
+               cbindgen,
+               cargo,
+               rustc (>= 1.70),
+               python3,
+               nodejs,
+               yasm,
+               clang,
+               llvm,
+               libx11-dev,
+               libx11-xcb-dev,
+               libxext-dev,
+               libxrender-dev,
+               libxt-dev,
+               libxcomposite-dev,
+               libxdamage-dev,
+               libxfixes-dev,
+               libpulse-dev,
+               libasound2-dev,
+               libdbus-glib-1-dev,
+               libgtk-3-dev,
+               zip,
+               unzip,
+               nasm
+Standards-Version: 4.6.2
+Homepage: https://github.com/WTmartin8089/waynewolf
+Rules-Requires-Root: no
+
+Package: waynewolf
+Architecture: amd64
+Depends: ${shlibs:Depends}, ${misc:Depends},
+         libgtk-3-0,
+         libdbus-glib-1-2,
+         libxt6,
+         libpulse0
+Recommends: libavcodec-extra
+Suggests: fonts-lyx
+Description: Privacy-focused web browser based on LibreWolf
+ WayneWolf is a privacy-focused web browser fork of LibreWolf with:
+ .
+  * Minimalist dark theme UI
+  * Profile template system (dev, browse, ghost)
+  * Auto-extension installation
+  * Nuclear privacy settings by default
+  * No telemetry or tracking
+ .
+ Built on Mozilla Firefox technology with LibreWolf privacy enhancements.
